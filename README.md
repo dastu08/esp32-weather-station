@@ -1,6 +1,5 @@
-# ESP32 DevKitC
-This is an example project with the ESP32 chip. Try out some
-features of it and get experience.
+# ESP32 Weather Station
+This is a project with the ESP32 chip onboard the ESP32-devkitc and a temperature and pressure sensor BMP180. It uses the ESP-IDF framework.
 * [Framework](#framework)
 * [Hardware](#hardware)
 * [VS Code Extension](#vs-code-extension)
