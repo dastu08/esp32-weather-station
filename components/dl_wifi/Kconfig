@@ -1,0 +1,26 @@
+menu "Wifi Connect Config"
+
+    config APP_WIFI_SSID
+        string "WiFi SSID"
+        default "myssid"
+        help
+            SSID (network name) for the example to connect to.
+
+    config APP_WIFI_PWD
+        string "WiFi Password"
+        default "mypassword"
+        help
+            WiFi password (WPA or WPA2) for the example to use.
+
+    choice APP_WIFI_SCAN_METHOD
+        prompt "scan method"
+        default APP_WIFI_FAST_SCAN
+        help
+            scan method for the esp32 to use
+        config APP_WIFI_FAST_SCAN
+            bool "fast"
+        config APP_WIFI_ALL_CHANNEL_SCAN
+            bool "all"
+    endchoice
+
+endmenu
