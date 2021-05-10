@@ -19,7 +19,9 @@ git clone --recurisve --branch v4.2 https://github.com/espressif/esp-idf.git
 The following header files are part of `esp_common` component and **do not need** to be added to required lists in `CMakeLists.txt` of components.
 * `esp_err.h`
 
-### Toolchain
+### Toolchain Troubleshooting
+Make sure to have the packages `python3-virtualenv` installed if you have an error `No module pip`.
+
 The setup needs the name `python` so set the alternatives and then install the toolchain for the local user inside the `esp/esp-idf` directory. 
 ```bash
 sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 10 && alias pip=pip3
