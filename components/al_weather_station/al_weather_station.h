@@ -4,8 +4,8 @@
 #ifndef _AL_WEATHER_STATION_H_
 #define _AL_WEATHER_STATION_H_
 
-#include "esp_timer.h"
 #include "esp_event.h"
+#include "esp_timer.h"
 
 /** Initialize the measurement timer.
 
@@ -30,6 +30,18 @@ void al_weather_station_init();
     given period.
 */
 void al_weather_station_start(uint64_t period);
+
+/** Stop the measurement timer.
+
+**Requirements**
+    Initatilze the timer first with
+    `al_weather_station_init`. The measurement timer must
+    also be running.
+
+**Description**
+    Stop the timer from `al_weather_station_init`.
+*/
+void al_weather_station_stop();
 
 void al_weather_station_handler(void* arg,
                                 esp_event_base_t base,
