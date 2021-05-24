@@ -88,7 +88,7 @@ void app_main() {
 #endif  // ENABLE_WIFI
 
 #ifdef ENABLE_HEARTBEAT
-    esp_log_level_set("heartbeat", ESP_LOG_INFO);
+    esp_log_level_set("heartbeat", ESP_LOG_DEBUG);
 
     log_status(TAG,
                esp_event_handler_instance_register(HEARTBEAT_EVENT,
