@@ -12,11 +12,13 @@
 #include "cJSON.h"
 
 typedef enum {
+    INVALID_QUANTITY,
     TEMPERATURE,
     PRESSURE
 } quantity_type_t;
 
 typedef enum {
+    INVALID_NAME,
     HEARTBEAT,
     HEARTBEAT_INTERVAL,
     MEASUREMENT_INTERVAL
@@ -27,9 +29,26 @@ static const char *TAG = "weather_station";
 // handle to identify the timer
 esp_timer_handle_t measurement_timer;
 
-// convert a string to a quanity_type number
+// PRIVATE FUNCTIONS
+
+/** Convert a string to a quanity_type number.
+
+** Parameters**
+    - string: 
+        char pointer that points to the string to be
+        converted
+
+**Return**
+    A numerical value of the enum `quantity_type_t` is
+    returned depending on the input string. The standard
+    value if no string is matched is `INVALID_QUANTITY`.
+
+**Description**
+    Use `strcmp` to check the input string against known 
+    types.
+*/
 uint8_t string2quanity_type(char *string) {
-    quantity_type_t quantity_type;
+    quantity_type_t quantity_type = INVALID_QUANTITY;
 
     if (0 == strcmp(string, "temperature")) {
         quantity_type = TEMPERATURE;
@@ -40,9 +59,24 @@ uint8_t string2quanity_type(char *string) {
     return quantity_type;
 }
 
-// convert a string to a name_type number
+/** Convert a string to a name_type number.
+
+** Parameters**
+    - string: 
+        char pointer that points to the string to be
+        converted
+
+**Return**
+    A numerical value of the enum `quantity_name_t` is
+    returned depending on the input string. The standard
+    value if no string is matched is `INVALID_NAME`.
+
+**Description**
+    Use `strcmp` to check the input string against known 
+    types.
+*/
 uint8_t string2name_type(char *string) {
-    name_type_t name_type;
+    name_type_t name_type = INVALID_NAME;
 
     if (0 == strcmp(string, "heartbeat")) {
         name_type = HEARTBEAT;
@@ -55,10 +89,23 @@ uint8_t string2name_type(char *string) {
     return name_type;
 }
 
-// do the measurement of the specified quantity
+/** Do the measurement of the specified quantity.
+
+**Parameters**
+    - quantity_string:
+        char pointer to the string that can be converted to 
+        a quantity type by `string2quantity_type`
+    
+**Description**
+    Start issuing the measurment on the BMP180. This include
+    the temperature and the pressure. Get the system time
+    and send the result of the measurement together with the 
+    time stamp via UDP. If the input string does not match
+    send an error.
+*/
 void make_measurement(char *quantity_string) {
     char time_buf[32];
-    char tx_buffer[128];
+    char tx_buffer[256];
     int32_t quantity_value;
 
     switch (string2quanity_type(quantity_string)) {
@@ -67,7 +114,8 @@ void make_measurement(char *quantity_string) {
             get_time(time_buf);
 
             sprintf(tx_buffer,
-                    "{\"type\":\"response\",\"time\":\"%s\",\"temperature\": %.1f}",
+                    "{\"type\":\"response\",\"time\":\"%s\",\"quantity\":"
+                    "{\"name\":\"temperature\",\"value\": %.1f,\"unit\":\"celsius\"}}",
                     time_buf, (float)quantity_value / 10);
             pl_udp_send(tx_buffer);
             break;
@@ -77,7 +125,8 @@ void make_measurement(char *quantity_string) {
             get_time(time_buf);
 
             sprintf(tx_buffer,
-                    "{\"type\":\"response\",\"time\":\"%s\",\"pressure\": %.3f}",
+                    "{\"type\":\"response\",\"time\":\"%s\",\"quantity\":"
+                    "{\"name\":\"pressure\",\"value\": %.3f,\"unit\":\"hPa\"}}",
                     time_buf, (float)quantity_value / 100);
             pl_udp_send(tx_buffer);
             break;
@@ -88,8 +137,21 @@ void make_measurement(char *quantity_string) {
     }
 }
 
-// set the variable to the given value of type string
-void set_variable_string(char *name_string, char *value_string) {
+/** Set the variable to the given value of type string.
+
+**Parameters**
+    - name_string:
+        string that contains the name of the variable to be 
+        set. This must be convertable by `string2name_type`
+    - value_string:
+        string containing the value for the set variable
+
+**Description**
+    Convert name_string to a `name_type_t`. Handle the cases
+    from there. Turn the heartbeat `on` or `off` with this.
+*/
+void set_variable_string(char *name_string,
+                         char *value_string) {
     switch (string2name_type(name_string)) {
         case HEARTBEAT:
             if (0 == strcmp(value_string, "on")) {
@@ -104,18 +166,34 @@ void set_variable_string(char *name_string, char *value_string) {
     }
 }
 
-// set the variable to the given value of type int
-void set_variable_int(char *name_string, uint8_t value_int) {
+/** Set the variable to the given value of type int.
+
+**Parameters**
+    - name_string:
+        string that contains the name of the variable to be 
+        set. This must be convertable by `string2name_type`
+    - value_int:
+        integer containing the value for the set variable
+
+**Description**
+    Convert name_string to a `name_type_t`. Handle the cases
+    from there. Set the time intervals of the heartbeat and
+    measurement timers with this.
+*/
+void set_variable_int(char *name_string,
+                      uint8_t value_int) {
     switch (string2name_type(name_string)) {
         case HEARTBEAT_INTERVAL:
-            // restart the heartbeat timer with the new period
+            // restart the heartbeat timer with the new
+            // period
             heartbeat_stop();
             heartbeat_set_period(value_int);
             heartbeat_start();
             break;
 
         case MEASUREMENT_INTERVAL:
-            // restart the measurement time with the new period
+            // restart the measurement time with the new
+            // period
             al_weather_station_stop();
             al_weather_station_start(value_int);
             break;
@@ -125,10 +203,16 @@ void set_variable_int(char *name_string, uint8_t value_int) {
     }
 }
 
-// function gets called when the timer runs out
+/** Function gets called when the timer runs out.
+
+**Description**
+    Perform the measurments of temperature and pressure. 
+    Save the system time of the measurment time point. Send
+    the results together with the time tag via UDP.
+*/
 void measurement_callback() {
     char time_buf[32];
-    char tx_buffer[128];
+    char tx_buffer[256];
 
     ESP_LOGD(TAG, "measurement started");
 
@@ -137,12 +221,15 @@ void measurement_callback() {
     get_time(time_buf);
 
     sprintf(tx_buffer,
-            "{\"type\":\"measurement\",\"time\":\"%s\",\"temperature\": "
-            "%.1f,\"pressure\": %.3f}",
+            "{\"type\":\"measurement\",\"time\":\"%s\",\"quantity\":["
+            "{\"name\":\"temperature\",\"value\": %.1f,\"unit\":\"celsius\"},"
+            "{\"name\":\"pressure\",\"value\": %.3f,\"unit\":\"hPa\"}]}",
             time_buf, (float)t / 10, (float)p / 100);
 
     pl_udp_send(tx_buffer);
 }
+
+// PUBLIC FUNCTIONS
 
 void al_weather_station_init() {
     ESP_LOGI(TAG, "init started");
