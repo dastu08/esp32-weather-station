@@ -6,7 +6,10 @@
 #include "../general/general.h"
 #include "../pl_udp/pl_udp.h"
 
-static const char *TAG = "heartbeat";
+static const char* TAG = "heartbeat";
+
+// heartbeat period in seconds
+static uint64_t heartbeat_period = 60;
 
 ESP_EVENT_DEFINE_BASE(HEARTBEAT_EVENT);
 
@@ -24,6 +27,10 @@ void heartbeat_callback() {
                    portMAX_DELAY);
 }
 
+void heartbeat_set_period(uint8_t period) {
+    heartbeat_period = (uint64_t)period;
+}
+
 void heartbeat_init() {
     // set up the timer stuff
     const esp_timer_create_args_t heartbeat_timer_args = {
@@ -38,11 +45,17 @@ void heartbeat_init() {
     // setup the event stuff
 }
 
-void heartbeat_start(uint64_t period) {
+void heartbeat_start() {
     log_status(TAG,
                esp_timer_start_periodic(heartbeat_timer,
-                                        period * 1000000),
+                                        heartbeat_period * 1000000),
                "starting heartbeat timer");
+}
+
+void heartbeat_stop() {
+    log_status(TAG,
+               esp_timer_stop(heartbeat_timer),
+               "stopped heartbeat timer");
 }
 
 void heartbeat_handler(void* arg,

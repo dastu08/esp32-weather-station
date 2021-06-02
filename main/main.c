@@ -26,15 +26,14 @@
 #define ENABLE_BMP180
 
 // period of the heartbeat in seconds
-#define HEARTBEAT_RATE 10
+#define HEARTBEAT_RATE 120
 // period of the weather station measurements in seconds
-#define MEASUREMENT_RATE 15
+#define MEASUREMENT_RATE 30
 // port for the udp communication
 #define UDP_PORT 50000
 
 // Tag for logging from this file
 static const char* TAG = "user";
-
 
 // application entry point
 void app_main() {
@@ -59,6 +58,7 @@ void app_main() {
 #endif  // ENABLE_BMP180
 
 #ifdef ENABLE_WIFI
+    // show less infos from the internal wifi component
     esp_log_level_set("wifi", ESP_LOG_WARN);
     esp_log_level_set("dl_wifi", ESP_LOG_INFO);
     esp_log_level_set("pl_udp", ESP_LOG_VERBOSE);
@@ -88,8 +88,10 @@ void app_main() {
 #endif  // ENABLE_WIFI
 
 #ifdef ENABLE_HEARTBEAT
-    esp_log_level_set("heartbeat", ESP_LOG_INFO);
+    esp_log_level_set("heartbeat", ESP_LOG_DEBUG);
 
+    // register the handler upon a heartbeat event which are
+    // triggered by a timer
     log_status(TAG,
                esp_event_handler_instance_register(HEARTBEAT_EVENT,
                                                    HEARTBEAT_EVENT_SEND,
@@ -98,9 +100,16 @@ void app_main() {
                                                    NULL),
                "register heartbeat event HEARTBEAT_EVENT_SEND_handler");
 
+    // init and start the heartbeat timer
     heartbeat_init();
     heartbeat_start(HEARTBEAT_RATE);
+#endif  // ENABLE_HEARTBEAT
 
+#ifdef ENABLE_WEATHER_STATION
+    esp_log_level_set("weather_station", ESP_LOG_DEBUG);
+
+    // register the handler that handles incoming UDP
+    // messages and thus initiates measurements
     log_status(TAG,
                esp_event_handler_instance_register(UDP_EVENT,
                                                    UDP_EVENT_RECEIVED,
@@ -108,14 +117,10 @@ void app_main() {
                                                    NULL,
                                                    NULL),
                "register udp event UDP_EVENT_RECEIVED handler");
-#endif  // ENABLE_HEARTBEAT
 
-#ifdef ENABLE_WEATHER_STATION
-    esp_log_level_set("weather_station", ESP_LOG_DEBUG);
-
+    // init and start the measurement timer
     al_weather_station_init();
     al_weather_station_start(MEASUREMENT_RATE);
-
 #endif  // ENABLE_WEATHER_STATION
 
     while (1) {

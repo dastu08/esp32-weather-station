@@ -1,10 +1,44 @@
 # ESP32 Weather Station
-This is a project with the ESP32 chip onboard the ESP32-devkitc and a temperature and pressure sensor BMP180. It uses the ESP-IDF framework.
-* [Framework](#framework)
-* [Hardware](#hardware)
-* [VS Code Extension](#vs-code-extension)
+This is a project with the ESP32 chip onboard the **ESP32-DevKitC** and a temperature and pressure sensor **BMP180**. It uses the ESP-IDF framework.
+- [Usage](#usage)
+- [Framework](#framework)
+- [Hardware](#hardware)
+- [VS Code Extension](#vs-code-extension)
 
 ------------------------------
+## Usage
+1. Connect the `BMP180` to the `ESP32-DevKitC`. The default pins for I2C are `GPIO 19` for SDA and `GPIO 18` for SCL. This is set in `main.c` by calling
+    ```c
+    pl_i2c_init(GPIO_NUM_19, GPIO_NUM_18, 100000);
+    ```
+2. The esp32 needs to connect to an existing wifi network. See the section [Project Configuration](#project-configuration) for the steps to enter the ssid and the password.
+3. Communicate with the esp32 via UDP. Both sending and receiving are done over the same port. The port is set in `main.c`. 
+    ```c
+    #define UDP_PORT 50000
+    ```
+4. The UDP communication consists of JSON objects that are send as strings. The following listing shows all the current options. _The numerical values for the interval variables are in seconds._
+    ```json
+    {"type":"get","quantity":"temperature"}
+    {"type":"get","quantity":"pressure"}
+    {"type":"get","quantity":["temperature", "pressure"]}
+    {"type":"set","name":"heartbeat","value":"on"}
+    {"type":"set","name":"heartbeat","value":"off"}
+    {"type":"set","name":"heartbeat_interval","value": 30}}
+    {"type":"set","name":"measurement_interval","value": 5}}
+    ```
+5. The return objects have the following syntax.
+    ```json
+    {
+        "type":"response",
+        "time":"2021-05-04 20:11:20 CET",
+        "quantity": {
+            "name":"temperature",
+            "value": 21.5,
+            "unit": "celsius"
+        }
+    ```
+    The `type` has the value `response` if the message is send as a response to an earlier `get` request. If the message is send by the period measurement timer, then the `type` is `measurement`. The value of `quanity` can also be a list of objects. For debug purposes the esp32 also sends objects with type `heartbeat` those do not contain any more information than the type and the time.
+
 
 ## Framework
 The framework used in this project is the ESP-IDF by espressif that can be found on GitHub and has an extensive documentation  
@@ -17,7 +51,7 @@ git clone --recurisve --branch v4.2 https://github.com/espressif/esp-idf.git
 ```
 
 The following header files are part of `esp_common` component and **do not need** to be added to required lists in `CMakeLists.txt` of components.
-* `esp_err.h`
+- `esp_err.h`
 
 ### Toolchain Troubleshooting
 Make sure to have the packages `python3-virtualenv` installed if you have an error `No module pip`.
@@ -28,16 +62,15 @@ sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 10 &&
 ./install.sh
 ```
 After the installation you need to source `esp/esp-idf/export.sh`. Create an alias in `.bashrc`.
-```
-alias get_idf='. $HOME/esp/esp-idf/export.sh'
+```bash
+alias get-idf='. $HOME/esp/esp-idf/export.sh'
 ```
 
-> For the gdb debugger to work you have to install the
-> package `libpython2.7-dev`.
+> For the gdb debugger to work you have to install the package `libpython2.7-dev`.
 
 ### Project Configuration
 You can configure the framework for the project in an interactive terminal. Then `build`, `flash` and `monitor` the project. The `port` for flashing is `/dev/ttyUSB0` on Ubuntu/openSUSE.  
-```
+```bash 
 idf.py set-target esp32
 idf.py menuconfig
 idf.py build
@@ -46,6 +79,8 @@ idf.py monitor -p <port>
 idf.py flash monitor -p <port>
 idf.py size-components
 ```
+> The wifi configuration of the _menuconfig_ is located under `Component config ---> Wifi Connect Config --->  WiFi SSID /WiFi Password`. The fast scan method should work fine.
+
 Further documentation for monitor.  
 => https://docs.espressif.com/projects/esp-idf/en/v4.2/esp32/api-guides/tools/idf-monitor.html
 
@@ -74,15 +109,15 @@ For debugging use the _ESP-Prog_ board which has JTAG debugging capabilities. Th
 => https://docs.platformio.org/en/latest/faq.html#faq-udev-rules
 
 Make sure to apply the `udev` rule to avoid permission issues and then start the openocd service. Note this has to run when starting the `gdb`. 
-```
+```bash
 openocd -f interface/ftdi/esp32_devkitj_v1.cfg -f target/esp32.cfg
 ```
 You can also flash the ESP32 via JTAG.
-```
+```bash
 openocd -f interface/ftdi/esp32_devkitj_v1.cfg -f target/esp32.cfg -c "program_esp build/esp32-devkitc.bin 0x10000 verify exit"
 ```
 Start the debugger
-```
+```bash
 xtensa-esp32-elf-gdb -x gdbinit build/esp32-devkitc.elf
 ```
 
