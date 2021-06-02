@@ -22,7 +22,7 @@ void al_weather_station_init();
         the period of the periodic timer in seconds
 
 **Requirements**
-    Initatilze the timer first with
+    Initialize the timer first with
     `al_weather_station_init`.
 
 **Description**
@@ -34,7 +34,7 @@ void al_weather_station_start(uint64_t period);
 /** Stop the measurement timer.
 
 **Requirements**
-    Initatilze the timer first with
+    Initialize the timer first with
     `al_weather_station_init`. The measurement timer must
     also be running.
 
@@ -43,6 +43,23 @@ void al_weather_station_start(uint64_t period);
 */
 void al_weather_station_stop();
 
+/** Event handler for received UDP messages.
+
+**Parameters**
+    - *arg : pointer to arguments of the event
+    - base : event base
+    - id : event id
+    - *data : pointer to event data
+
+**Requirements**
+    Handler musst be registered for base `UDP_EVENT` and id
+    `UDP_EVENT_RECEIVED` on the default event loop.
+
+**Description**
+    Parse the incoming UDP message as JSON. Depending on the
+    type perfom different actions. `get` will trigger making 
+    a measurement. `set` will update an internal variable.
+*/
 void al_weather_station_handler(void* arg,
                                 esp_event_base_t base,
                                 int32_t id,

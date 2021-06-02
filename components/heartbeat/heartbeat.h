@@ -58,7 +58,21 @@ void heartbeat_start();
 */
 void heartbeat_stop();
 
+/** Event handler for heartbeat events.
 
+**Parameters**
+    - *arg : pointer to arguments of the event
+    - base : event base
+    - id : event id
+    - *data : pointer to event data
+
+**Requirements**
+    Handler musst be registered for base `HEARTBEAT_EVENT` 
+    and id `HEARTBEAT_EVENT_SEND` on the default event loop.
+
+**Description**
+    Send a heartbeat JSON object via UDP.
+*/
 void heartbeat_handler(void* arg,
                        esp_event_base_t base,
                        int32_t id,
