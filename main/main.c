@@ -26,8 +26,6 @@
 #define ENABLE_WIFI
 #define ENABLE_BMP180
 
-// period of the heartbeat in seconds
-#define HEARTBEAT_RATE 300
 // period of the weather station measurements in seconds
 #define MEASUREMENT_RATE 30
 // port for the udp communication
@@ -112,7 +110,7 @@ void app_main() {
 
     // init and start the heartbeat timer
     heartbeat_init();
-    heartbeat_start(HEARTBEAT_RATE);
+    heartbeat_start();
 #endif  // ENABLE_HEARTBEAT
 
 #ifdef ENABLE_WEATHER_STATION
