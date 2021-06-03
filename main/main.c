@@ -18,6 +18,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
 #include "freertos/task.h"
+#include "nvs_flash.h"
 #include "sdkconfig.h"
 
 #define ENABLE_WEATHER_STATION
@@ -26,7 +27,7 @@
 #define ENABLE_BMP180
 
 // period of the heartbeat in seconds
-#define HEARTBEAT_RATE 120
+#define HEARTBEAT_RATE 300
 // period of the weather station measurements in seconds
 #define MEASUREMENT_RATE 30
 // port for the udp communication
@@ -37,6 +38,15 @@ static const char* TAG = "user";
 
 // application entry point
 void app_main() {
+    // Initialize NVS
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+      ESP_ERROR_CHECK(nvs_flash_erase());
+      ret = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK(ret);
+
+
     // log on app start as warning to make it visible
     ESP_LOGW(TAG, "Hello world!");
 
@@ -59,9 +69,9 @@ void app_main() {
 
 #ifdef ENABLE_WIFI
     // show less infos from the internal wifi component
-    esp_log_level_set("wifi", ESP_LOG_WARN);
+    esp_log_level_set("wifi", ESP_LOG_INFO);
     esp_log_level_set("dl_wifi", ESP_LOG_INFO);
-    esp_log_level_set("pl_udp", ESP_LOG_VERBOSE);
+    esp_log_level_set("pl_udp", ESP_LOG_INFO);
 
     // register the event handlers for any wifi or ip events
     // to the default event loop. need `esp_event.h` to
@@ -88,7 +98,7 @@ void app_main() {
 #endif  // ENABLE_WIFI
 
 #ifdef ENABLE_HEARTBEAT
-    esp_log_level_set("heartbeat", ESP_LOG_DEBUG);
+    esp_log_level_set("heartbeat", ESP_LOG_INFO);
 
     // register the handler upon a heartbeat event which are
     // triggered by a timer
@@ -106,7 +116,7 @@ void app_main() {
 #endif  // ENABLE_HEARTBEAT
 
 #ifdef ENABLE_WEATHER_STATION
-    esp_log_level_set("weather_station", ESP_LOG_DEBUG);
+    esp_log_level_set("weather_station", ESP_LOG_INFO);
 
     // register the handler that handles incoming UDP
     // messages and thus initiates measurements
