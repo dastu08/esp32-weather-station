@@ -27,7 +27,7 @@
 #define ENABLE_BMP180
 
 // period of the weather station measurements in seconds
-#define MEASUREMENT_RATE 120
+#define MEASUREMENT_RATE 900
 // port for the udp communication
 #define UDP_PORT 50000
 

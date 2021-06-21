@@ -9,7 +9,7 @@
 static const char* TAG = "heartbeat";
 
 // heartbeat period in seconds
-static uint64_t heartbeat_period = 600;
+static uint64_t heartbeat_period = 120;
 
 ESP_EVENT_DEFINE_BASE(HEARTBEAT_EVENT);
 
