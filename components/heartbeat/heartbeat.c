@@ -9,7 +9,7 @@
 static const char* TAG = "heartbeat";
 
 // heartbeat period in seconds
-static uint64_t heartbeat_period = 300;
+static uint64_t heartbeat_period = 600;
 
 ESP_EVENT_DEFINE_BASE(HEARTBEAT_EVENT);
 
@@ -27,8 +27,8 @@ void heartbeat_callback() {
                    portMAX_DELAY);
 }
 
-void heartbeat_set_period(uint8_t period) {
-    heartbeat_period = (uint64_t)period;
+void heartbeat_set_period(uint64_t period) {
+    heartbeat_period = period;
 }
 
 void heartbeat_init() {

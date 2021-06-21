@@ -27,7 +27,7 @@
 #define ENABLE_BMP180
 
 // period of the weather station measurements in seconds
-#define MEASUREMENT_RATE 30
+#define MEASUREMENT_RATE 120
 // port for the udp communication
 #define UDP_PORT 50000
 
@@ -69,7 +69,7 @@ void app_main() {
     // show less infos from the internal wifi component
     esp_log_level_set("wifi", ESP_LOG_INFO);
     esp_log_level_set("dl_wifi", ESP_LOG_INFO);
-    esp_log_level_set("pl_udp", ESP_LOG_INFO);
+    esp_log_level_set("pl_udp", ESP_LOG_VERBOSE);
 
     // register the event handlers for any wifi or ip events
     // to the default event loop. need `esp_event.h` to

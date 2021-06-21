@@ -33,7 +33,7 @@ void heartbeat_init();
 **Description**
     Set the internal value for the heartbeat rate.
 */
-void heartbeat_set_period(uint8_t period);
+void heartbeat_set_period(uint64_t period);
 
 /** Start the heartbeat timer.
 
