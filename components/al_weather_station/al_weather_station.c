@@ -181,7 +181,7 @@ void set_variable_string(char *name_string,
     measurement timers with this.
 */
 void set_variable_int(char *name_string,
-                      uint8_t value_int) {
+                      uint64_t value_int) {
     switch (string2name_type(name_string)) {
         case HEARTBEAT_INTERVAL:
             // restart the heartbeat timer with the new
