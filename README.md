@@ -26,18 +26,44 @@ This is a project with the ESP32 chip onboard the **ESP32-DevKitC** and a temper
     {"type":"set","name":"heartbeat_interval","value": 30}}
     {"type":"set","name":"measurement_interval","value": 5}}
     ```
-5. The return objects have the following syntax.
+5. The return objects have the following syntax.  
+    Response to a `get` request which has only a single element in the list of `quantity`.
     ```json
     {
         "type":"response",
         "time":"2021-05-04 20:11:20 CET",
-        "quantity": {
+        "quantity": [{
             "name":"temperature",
             "value": 21.5,
             "unit": "celsius"
-        }
+        }]
+    }
     ```
-    The `type` has the value `response` if the message is send as a response to an earlier `get` request. If the message is send by the period measurement timer, then the `type` is `measurement`. The value of `quanity` can also be a list of objects. For debug purposes the esp32 also sends objects with type `heartbeat` those do not contain any more information than the type and the time.
+    Respone from a periodic measurement which holds a list measured quantities in `quantity`.
+    ```json
+    {
+        "type":"measurement",
+        "time":"2021-10-18 14:41:29 CET",
+        "quantity":[
+            {
+                "name":"temperature",
+                "value": 21.6,
+                "unit":"celsius"
+            },
+            {
+                "name":"pressure",
+                "value": 1019.310,
+                "unit":"hPa"
+                }
+        ]}
+    ```
+    For debug purposes the esp32 also sends objects with type `heartbeat` those do not contain any more information than the type and the time.
+    ```json
+    {
+        "type":"heartbeat",
+        "time":"2021-10-18 14:42:53 CET"
+    }
+    ```
 
 
 ## Framework

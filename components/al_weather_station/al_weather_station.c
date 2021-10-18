@@ -115,7 +115,7 @@ void make_measurement(char *quantity_string) {
 
             sprintf(tx_buffer,
                     "{\"type\":\"response\",\"time\":\"%s\",\"quantity\":"
-                    "{\"name\":\"temperature\",\"value\": %.1f,\"unit\":\"celsius\"}}",
+                    "[{\"name\":\"temperature\",\"value\": %.1f,\"unit\":\"celsius\"}]}",
                     time_buf, (float)quantity_value / 10);
             pl_udp_send(tx_buffer);
             break;
@@ -126,7 +126,7 @@ void make_measurement(char *quantity_string) {
 
             sprintf(tx_buffer,
                     "{\"type\":\"response\",\"time\":\"%s\",\"quantity\":"
-                    "{\"name\":\"pressure\",\"value\": %.3f,\"unit\":\"hPa\"}}",
+                    "[{\"name\":\"pressure\",\"value\": %.3f,\"unit\":\"hPa\"}]}",
                     time_buf, (float)quantity_value / 100);
             pl_udp_send(tx_buffer);
             break;
