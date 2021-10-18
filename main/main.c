@@ -27,7 +27,7 @@
 #define ENABLE_BMP180
 
 // period of the weather station measurements in seconds
-#define MEASUREMENT_RATE 900
+#define MEASUREMENT_RATE 600
 // port for the udp communication
 #define UDP_PORT 50000
 
@@ -109,12 +109,13 @@ void app_main() {
                "register heartbeat event HEARTBEAT_EVENT_SEND_handler");
 
     // init and start the heartbeat timer
+    heartbeat_set_period(300);
     heartbeat_init();
     heartbeat_start();
 #endif  // ENABLE_HEARTBEAT
 
 #ifdef ENABLE_WEATHER_STATION
-    esp_log_level_set("weather_station", ESP_LOG_INFO);
+    esp_log_level_set("weather_station", ESP_LOG_DEBUG);
 
     // register the handler that handles incoming UDP
     // messages and thus initiates measurements
