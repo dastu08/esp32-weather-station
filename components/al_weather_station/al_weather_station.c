@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "../al_bmp180/al_bmp180.h"
+#include "../al_crypto/al_crypto.h"
 #include "../general/general.h"
 #include "../heartbeat/heartbeat.h"
 #include "../pl_udp/pl_udp.h"
@@ -117,6 +118,7 @@ void make_measurement(char *quantity_string) {
                     "{\"type\":\"response\",\"time\":\"%s\",\"quantity\":"
                     "[{\"name\":\"temperature\",\"value\": %.1f,\"unit\":\"celsius\"}]}",
                     time_buf, (float)quantity_value / 10);
+            mycryptoinit();
             pl_udp_send(tx_buffer);
             break;
 
