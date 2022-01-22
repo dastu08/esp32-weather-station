@@ -118,7 +118,6 @@ void make_measurement(char *quantity_string) {
                     "{\"type\":\"response\",\"time\":\"%s\",\"quantity\":"
                     "[{\"name\":\"temperature\",\"value\": %.1f,\"unit\":\"celsius\"}]}",
                     time_buf, (float)quantity_value / 10);
-            mycryptoinit();
             pl_udp_send(tx_buffer);
             break;
 

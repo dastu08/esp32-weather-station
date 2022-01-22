@@ -2,6 +2,7 @@
 
 // components
 #include "../components/al_bmp180/al_bmp180.h"
+#include "../components/al_crypto/al_crypto.h"
 #include "../components/al_weather_station/al_weather_station.h"
 #include "../components/dl_wifi/dl_wifi.h"
 #include "../components/general/general.h"
@@ -21,10 +22,11 @@
 #include "nvs_flash.h"
 #include "sdkconfig.h"
 
-#define ENABLE_WEATHER_STATION
-#define ENABLE_HEARTBEAT
-#define ENABLE_WIFI
-#define ENABLE_BMP180
+// #define ENABLE_WEATHER_STATION
+// #define ENABLE_HEARTBEAT
+// #define ENABLE_WIFI
+// #define ENABLE_BMP180
+#define ENABLE_CRYPTO
 
 // period of the weather station measurements in seconds
 #define MEASUREMENT_RATE 600
@@ -39,11 +41,10 @@ void app_main() {
     // Initialize NVS
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-      ESP_ERROR_CHECK(nvs_flash_erase());
-      ret = nvs_flash_init();
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        ret = nvs_flash_init();
     }
     ESP_ERROR_CHECK(ret);
-
 
     // log on app start as warning to make it visible
     ESP_LOGW(TAG, "Hello world!");
@@ -131,6 +132,13 @@ void app_main() {
     al_weather_station_init();
     al_weather_station_start(MEASUREMENT_RATE);
 #endif  // ENABLE_WEATHER_STATION
+
+#ifdef ENABLE_CRYPTO
+    al_crypto_init();
+    char out[16];
+    al_crypto_encrypt("hello world and here it goes", out);
+
+#endif  // ENABLE_CRYPTO
 
     while (1) {
         vTaskDelay(5000 / portTICK_PERIOD_MS);
