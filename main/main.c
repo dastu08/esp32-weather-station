@@ -134,9 +134,15 @@ void app_main() {
 #endif  // ENABLE_WEATHER_STATION
 
 #ifdef ENABLE_CRYPTO
+    esp_log_level_set("al_crypto", ESP_LOG_VERBOSE);
     al_crypto_init();
-    char out[16];
-    al_crypto_encrypt("hello world and here it goes", out);
+    char in[32] = "hello world and here it goes";
+    char out[32];
+    char out2[32];
+    al_crypto_encrypt(in, 16, out);
+    al_crypto_decrypt(out, 16, out2);
+
+    // ESP_LOGD(TAG, "%s", out);
 
 #endif  // ENABLE_CRYPTO
 
