@@ -21,6 +21,7 @@
 #include "freertos/task.h"
 #include "nvs_flash.h"
 #include "sdkconfig.h"
+#include "string.h"
 
 // #define ENABLE_WEATHER_STATION
 // #define ENABLE_HEARTBEAT
@@ -49,7 +50,7 @@ void app_main() {
     // log on app start as warning to make it visible
     ESP_LOGW(TAG, "Hello world!");
 
-    esp_log_level_set("user", ESP_LOG_DEBUG);
+    esp_log_level_set("user", ESP_LOG_VERBOSE);
 
     // create an event loop
     log_status(TAG,
@@ -136,11 +137,14 @@ void app_main() {
 #ifdef ENABLE_CRYPTO
     esp_log_level_set("al_crypto", ESP_LOG_VERBOSE);
     al_crypto_init();
-    char in[32] = "hello world and here it goes";
-    char out[32];
-    char out2[32];
-    al_crypto_encrypt(in, 16, out);
-    al_crypto_decrypt(out, 16, out2);
+    byte_t in[32] = "hello world and here it goes";
+    padding_message(in, 32);
+
+    byte_t out[32];
+    byte_t out2[32];
+    byte_t iv[16] = "1111111111111111";
+    al_crypto_encrypt(in, 32, iv, out);
+    al_crypto_decrypt(out, 32, iv, out2);
 
     // ESP_LOGD(TAG, "%s", out);
 
