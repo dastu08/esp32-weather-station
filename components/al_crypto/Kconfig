@@ -1,0 +1,9 @@
+menu "AES-256 Config"
+
+    config AES_256_KEY
+        string "256 bit key"
+        default ""
+        help
+            Encryption key for AES-256 al_crypto component. Key in hex format of 32 bytes.
+
+endmenu
