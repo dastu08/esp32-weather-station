@@ -47,3 +47,12 @@ void get_time(char *buf) {
             date.tm_min,
             date.tm_sec);
 }
+
+long get_seed() {
+   time_t epoch; 
+   // get current time
+    time(&epoch);
+    // convert to long as seed
+    return (long)epoch;
+    
+}

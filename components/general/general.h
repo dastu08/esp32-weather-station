@@ -46,4 +46,14 @@ void log_status(const char *tag,
 */
 void get_time(char *buf);
 
+/** Get a seed for random generator initializaiton
+
+**Return**
+    long number which changes after every function call
+
+**Description**
+    Use the current system time as a seed.
+*/
+long get_seed();
+
 #endif  // _GENERAL_H_
