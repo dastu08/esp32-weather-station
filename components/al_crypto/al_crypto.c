@@ -12,9 +12,13 @@
 
 static const char* TAG = "al_crypto";
 
+char key_string[65] = CONFIG_AES_256_KEY;
+
 mbedtls_aes_context ctx;
 
+// print the numbers 0 to length with spaces separated
 void print_index(int length) {
+    printf("index: ");
     // print the index number above
     for (int i = 0; i < length; i++) {
         printf("%2d ", i);
@@ -22,8 +26,10 @@ void print_index(int length) {
     printf("\n");
 }
 
+// print length bytes in hex format
 void print_bytes(byte_t* bytes, int length) {
     byte_t byte;
+    printf("bytes: ");
     for (int i = 0; i < length; i++) {
         byte = bytes[i];
         if (byte < 0x10) {
@@ -35,29 +41,37 @@ void print_bytes(byte_t* bytes, int length) {
     printf("\n");
 }
 
+// print length chars
 void print_chars(char* chars, int length) {
+    printf("chars: ");
     for (int i = 0; i < length; i++) {
         printf(" %c ", chars[i]);
     }
     printf("\n");
 }
 
+// copy len number of bytes from old to new
 void copy_bytes(byte_t* old, byte_t* new, int len) {
     for (int i = 0; i < len; ++i) {
         new[i] = old[i];
     }
 }
 
+// convert the hex string in chars into length bytes
+// 2 hex digits make one byte
 void convert_hex2bytes(char* chars, byte_t* bytes, int length) {
-    char buff[4];
+    char buff[5];
     buff[0] = '0';
     buff[1] = 'x';
+    buff[4] = '\0';
     for (int i = 0; i < length; i++) {
         buff[2] = chars[2 * i];
         buff[3] = chars[2 * i + 1];
         // printf("i = %d : ", i);
-        // print_chars(buff, 4);
         bytes[i] = strtol(buff, NULL, 16);
+        // printf("buff: %c%c%c%c, value: 0x%X\n",
+        //    buff[0], buff[1], buff[2], buff[3], bytes[i]);
+        // print_chars(buff, 4);
     }
 }
 
@@ -69,15 +83,16 @@ void padding_message(byte_t* message, int max_len) {
 }
 
 void al_crypto_init() {
-    char key_hex[65] = "9018321f988274f6a4eaf29c82df2614a296f9c06ca5776a893e1d0c9e35e1f9";
-    unsigned char key[32];
-    // print_chars(key_hex, 64);
-    convert_hex2bytes(key_hex, key, 32);
+    byte_t key_bytes[32];
+
+    convert_hex2bytes(key_string, key_bytes, 32);
+    ESP_LOGV(TAG, "key string: %s", key_string);
     ESP_LOGV(TAG, "key");
     print_index(32);
-    print_bytes(key, 32);
+    print_bytes(key_bytes, 32);
+
     mbedtls_aes_init(&ctx);
-    mbedtls_aes_setkey_enc(&ctx, key, 256);
+    mbedtls_aes_setkey_enc(&ctx, key_bytes, 256);
     // mbedtls_aes_setkey_dec(&ctx, key, 256);
 
     ESP_LOGI(TAG, "init finished");
