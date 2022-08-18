@@ -137,16 +137,16 @@ void app_main() {
 #ifdef ENABLE_CRYPTO
     esp_log_level_set("al_crypto", ESP_LOG_VERBOSE);
     al_crypto_init();
-    byte_t in[32] = "hello world and here it goes";
-    padding_message(in, 32);
 
+    byte_t in[32] = "hello world and here it goes";
     byte_t out[32];
     byte_t out2[32];
-    byte_t iv[16] = "1111111111111111";
+    byte_t iv[16];
+
+    al_crypto_padding_message(in, 32);
+    al_crypto_generate_iv(iv, 16);
     al_crypto_encrypt(in, 32, iv, out);
     al_crypto_decrypt(out, 32, iv, out2);
-
-    // ESP_LOGD(TAG, "%s", out);
 
 #endif  // ENABLE_CRYPTO
 
