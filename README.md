@@ -1,16 +1,18 @@
 # ESP32 Weather Station
 This is a project with the ESP32 chip onboard the **ESP32-DevKitC** and a 
 temperature and pressure sensor **BMP180**. It uses the ESP-IDF framework.
-- [Usage](#usage)
-- [Framework](#framework)
+- [ESP32 Weather Station](#esp32-weather-station)
+  - [Usage](#usage)
+  - [Framework](#framework)
     - [Toolchain Troubleshooting (Ubuntu)](#toolchain-troubleshooting-ubuntu)
     - [Project Configuration](#project-configuration)
-    - [WIFi](#wifi)
-- [Hardware](#hardware)
+    - [WiFi](#wifi)
+  - [Hardware](#hardware)
     - [ESP32-DevKitC V4](#esp32-devkitc-v4)
-    - [ESP Prog](#esp-prog)
+    - [ESP-Prog](#esp-prog)
+      - [Pin connection for debugging](#pin-connection-for-debugging)
     - [BMP180 Sensor](#bmp180-sensor)
-- [VS Code Extension](#vs-code-extension)
+  - [VS Code Extension](#vs-code-extension)
 
 ------------------------------
 ## Usage
