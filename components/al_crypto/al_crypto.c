@@ -7,8 +7,8 @@
 #include "esp_log.h"
 #include "mbedtls/aes.h"
 #include "stdio.h"
-#include "stdlib.h"
 #include "string.h"
+#include "esp_system.h"
 
 static const char* TAG = "al_crypto";
 
@@ -146,9 +146,6 @@ void al_crypto_init() {
     print_index(32);
     print_bytes(key_bytes, 32);
 
-    ESP_LOGV(TAG, "seed: %d", seed);
-    srand(seed);
-
     mbedtls_aes_init(&ctx);
     mbedtls_aes_setkey_enc(&ctx, key_bytes, 256);
     // mbedtls_aes_setkey_dec(&ctx, key, 256);
@@ -158,7 +155,7 @@ void al_crypto_init() {
 
 void al_crypto_generate_iv(byte_t* iv, int len) {
     for (int i = 0; i < len; ++i) {
-        iv[i] = rand() % 256;
+        iv[i] = esp_random() % 256;
     }
 }
 

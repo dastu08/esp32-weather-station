@@ -29,19 +29,16 @@ void al_crypto_padding_message(byte_t* message, int max_len);
     in the config.
 
 **Description**
-    Get a seed for the random generator and initialize it.
     Convert the key hex string into bytes and initialize
     the mbedtls aes stuff with the key.
 */
 void al_crypto_init();
 
 /** Generate an initialization vector (IV)
+
 **Parameters**
     - *iv : byte array to hold the iv in it
     - len : number of bytes of the iv
-
-**Requirements**
-    Initialize the random number generator with srand().
 
 **Description**
     Generate len number of bytes (values 0-255) and store
