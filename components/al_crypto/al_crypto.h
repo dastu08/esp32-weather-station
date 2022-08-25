@@ -6,8 +6,6 @@
 
 typedef unsigned char byte_t;
 
-void al_crypto_log_ciphertext(byte_t* ciphertext);
-
 /** Initialize the al_crypto component
 
 **Requirements**
@@ -27,13 +25,14 @@ void al_crypto_init();
 
 **Requirements**
     Component al_cypto must be initialized with
-    `al_crypto_init()`. The allocated length of the 
-    ciphertext must be strlen(plaintext) + 17.
+    `al_crypto_init()`. The allocated length of the
+    ciphertext must be strlen(plaintext) + 16.
 
 **Description**
-    Generate and IV. Encrypt the plaintext in AES-CBC mode 
-    with the specified initialization vector (IV). The key 
-    was set during initialization.
+    Generate and IV. Encrypt the plaintext in AES-CBC mode
+    with the specified initialization vector (IV). The key
+    was set during initialization. Prepend the IV to the
+    ciphertext.
 */
 void al_crypto_encrypt(byte_t* plaintext,
                        byte_t* ciphertext);
@@ -62,5 +61,22 @@ void al_crypto_decrypt(byte_t* ciphertext,
                        int len,
                        byte_t* iv,
                        byte_t* plaintext);
+
+/** Log the ciphertext
+
+**Parameters**
+    - *ciphertext : byte array of the ciphertext with IV
+
+**Prerequisites**
+    The ciphertext must be at least 3 blocks of 16 bytes
+    long.
+
+**Description**
+    Convert the first 16 byte block (IV) and then the
+    first and last 16 byte blocks of the ciphertext into
+    a hex string represantation. Then verbose log the blocks
+    separated by spaces.
+*/
+void al_crypto_log_ciphertext(byte_t* ciphertext);
 
 #endif
