@@ -4,6 +4,7 @@
 // components
 #include "./pl_udp.h"
 
+#include "../al_crypto/al_crypto.h"
 #include "../general/general.h"
 
 // esp-idf
@@ -88,51 +89,51 @@ void pl_udp_handler(void *arg,
 
     if (base == IP_EVENT) {
         switch (id) {
-        case IP_EVENT_STA_GOT_IP:
+            case IP_EVENT_STA_GOT_IP:
 
-            // create IPv4 socket and get file
-            // descriptor
-            // domain: AF_INET : IPv4
-            // type: SOCK_DGRAM : datagram sockets
-            // protocol : IPPROTO_UDP
-            sock = socket(AF_INET,
-                          SOCK_DGRAM,
-                          IPPROTO_UDP);
+                // create IPv4 socket and get file
+                // descriptor
+                // domain: AF_INET : IPv4
+                // type: SOCK_DGRAM : datagram sockets
+                // protocol : IPPROTO_UDP
+                sock = socket(AF_INET,
+                              SOCK_DGRAM,
+                              IPPROTO_UDP);
 
-            if (sock < 0) {
-                ESP_LOGW(TAG,
-                         "udp socket does not exist");
-            } else {
-                ESP_LOGV(TAG, "created udp socket");
-
-                // bind socket to receiving port
-                err = bind(sock,
-                           (struct sockaddr *)&rx_addr,
-                           rx_addr_len);
-
-                if (err < 0) {
-                    ESP_LOGE(TAG,
-                             "unable to bind socket to port %d",
-                             ntohs(rx_addr.sin_port));
+                if (sock < 0) {
+                    ESP_LOGW(TAG,
+                             "udp socket does not exist");
                 } else {
-                    ESP_LOGD(TAG,
-                             "bound socket to port %d",
-                             ntohs(rx_addr.sin_port));
+                    ESP_LOGV(TAG, "created udp socket");
 
-                    udp_ready = true;
+                    // bind socket to receiving port
+                    err = bind(sock,
+                               (struct sockaddr *)&rx_addr,
+                               rx_addr_len);
 
-                    // get time syncronization
-                    sntp_setoperatingmode(SNTP_OPMODE_POLL);
-                    sntp_setservername(0, "pool.ntp.org");
-                    sntp_init();
-                    ESP_LOGV(TAG, "starting sntp_init");
+                    if (err < 0) {
+                        ESP_LOGE(TAG,
+                                 "unable to bind socket to port %d",
+                                 ntohs(rx_addr.sin_port));
+                    } else {
+                        ESP_LOGD(TAG,
+                                 "bound socket to port %d",
+                                 ntohs(rx_addr.sin_port));
+
+                        udp_ready = true;
+
+                        // get time syncronization
+                        sntp_setoperatingmode(SNTP_OPMODE_POLL);
+                        sntp_setservername(0, "pool.ntp.org");
+                        sntp_init();
+                        ESP_LOGV(TAG, "starting sntp_init");
+                    }
                 }
-            }
-            break;
+                break;
 
-        default:
-            // nothing
-            break;
+            default:
+                // nothing
+                break;
         }
 
         pl_udp_send("{\"type\":\"hello world\"}");
@@ -148,6 +149,10 @@ void pl_udp_handler(void *arg,
 }
 
 void pl_udp_send(const char *msg) {
+    // TODO msg -> msg_crypt
+    // char msg_crypt[273];
+    // al_crypto_encrypt(msg, msg_crypt);
+
     // check if socket was created
     if (sock >= 0 && udp_ready == true) {
         // send message via socket
@@ -163,7 +168,7 @@ void pl_udp_send(const char *msg) {
                      "unable to send message error %d",
                      err);
         } else {
-            ESP_LOGV(TAG,
+            ESP_LOGD(TAG,
                      "<< %s:%d %s",
                      inet_ntoa(tx_addr.sin_addr.s_addr),
                      ntohs(tx_addr.sin_port),
