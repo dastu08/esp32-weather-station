@@ -69,7 +69,7 @@ void app_main() {
 
 #ifdef ENABLE_WIFI
     // show less infos from the internal wifi component
-    esp_log_level_set("wifi", ESP_LOG_INFO);
+    esp_log_level_set("wifi", ESP_LOG_WARN);
     esp_log_level_set("dl_wifi", ESP_LOG_INFO);
     esp_log_level_set("pl_udp", ESP_LOG_VERBOSE);
 
@@ -139,14 +139,10 @@ void app_main() {
     al_crypto_init();
 
     byte_t in[32] = "hello world and here it goes";
-    byte_t out[32];
-    byte_t out2[32];
-    byte_t iv[16];
+    byte_t out[32+16+1];
+    al_crypto_encrypt(in, out);
 
-    al_crypto_padding_message(in, 32);
-    al_crypto_generate_iv(iv, 16);
-    al_crypto_encrypt(in, 32, iv, out);
-    al_crypto_decrypt(out, 32, iv, out2);
+    // al_crypto_decrypt(out, 32, iv, out2);
 
 #endif  // ENABLE_CRYPTO
 
