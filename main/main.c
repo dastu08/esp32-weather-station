@@ -139,7 +139,7 @@ void app_main() {
     al_crypto_init();
 
     byte_t in[32] = "hello world and here it goes";
-    byte_t out[32+16+1];
+    byte_t out[32+16];
     al_crypto_encrypt(in, out);
 
     // al_crypto_decrypt(out, 32, iv, out2);
