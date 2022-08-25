@@ -110,7 +110,9 @@ void copy_bytes(byte_t* old, byte_t* new, int len) {
     Read in the hex string and convert two consecutive
     hex digits into one byte.
 */
-void convert_hex2bytes(char* chars, byte_t* bytes, int length) {
+void convert_hex2bytes(char* chars,
+                       byte_t* bytes,
+                       int length) {
     char buff[5];
     buff[0] = '0';
     buff[1] = 'x';
