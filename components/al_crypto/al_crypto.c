@@ -186,7 +186,7 @@ void al_crypto_init() {
 
 void al_crypto_encrypt(byte_t* plaintext,
                        byte_t* ciphertext) {
-    const int max_length = 64;
+    const int max_length = 128;
     byte_t iv[16];
     byte_t buffer_in[max_length];
     byte_t buffer_out[max_length];
