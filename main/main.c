@@ -23,10 +23,10 @@
 #include "sdkconfig.h"
 #include "string.h"
 
-// #define ENABLE_WEATHER_STATION
-// #define ENABLE_HEARTBEAT
-// #define ENABLE_WIFI
-// #define ENABLE_BMP180
+#define ENABLE_WEATHER_STATION
+#define ENABLE_HEARTBEAT
+#define ENABLE_WIFI
+#define ENABLE_BMP180
 #define ENABLE_CRYPTO
 
 // period of the weather station measurements in seconds
@@ -135,12 +135,12 @@ void app_main() {
 #endif  // ENABLE_WEATHER_STATION
 
 #ifdef ENABLE_CRYPTO
-    esp_log_level_set("al_crypto", ESP_LOG_VERBOSE);
+    esp_log_level_set("al_crypto", ESP_LOG_DEBUG);
     al_crypto_init();
 
-    byte_t in[32] = "hello world and here it goes";
-    byte_t out[32+16];
-    al_crypto_encrypt(in, out);
+    // byte_t in[32] = "hello world and here it goes";
+    // byte_t out[32+16];
+    // al_crypto_encrypt(in, out);
 
     // al_crypto_decrypt(out, 32, iv, out2);
 
