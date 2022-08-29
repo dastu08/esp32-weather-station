@@ -153,7 +153,7 @@ void pl_udp_handler(void *arg,
 }
 
 void pl_udp_send(const char *msg) {
-    const int ciphertext_length = 70;
+    const int ciphertext_length = 128 + 16;
     int msg_length = strlen(msg);
     byte_t ciphertext[ciphertext_length];
 
@@ -162,8 +162,10 @@ void pl_udp_send(const char *msg) {
                  "cannot send a message of length %d bytes, maximum is 64 bytes. Aborting sending!",
                  msg_length);
         return;
+    } else {
+        ESP_LOGV(TAG, "plain message: %s", msg);
     }
-    al_crypto_encrypt(msg, ciphertext);
+    al_crypto_encrypt((byte_t*)msg, ciphertext);
 
     // check if socket was created
     if (sock >= 0 && udp_ready == true) {
@@ -181,12 +183,11 @@ void pl_udp_send(const char *msg) {
                      err);
         } else {
             ESP_LOGD(TAG,
-                     "<< %s:%d (%d bytes, %d words) %s",
+                     "<< %s:%d (%d bytes, %d words)",
                      inet_ntoa(tx_addr.sin_addr.s_addr),
                      ntohs(tx_addr.sin_port),
                      ciphertext_length,
-                     ciphertext_length / 16,
-                     msg);
+                     ciphertext_length / 16);
         }
     }
 }
