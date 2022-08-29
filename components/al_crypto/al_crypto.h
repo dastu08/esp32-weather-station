@@ -71,7 +71,7 @@ void al_crypto_decrypt(byte_t* ciphertext,
 **Description**
     Convert the first 16 byte block (IV) and then the
     first and last 16 byte blocks of the ciphertext into
-    a hex string represantation. Then verbose log the blocks
+    a hex string represantation. Then DEBUG log the blocks
     separated by spaces.
 */
 void al_crypto_log_ciphertext(byte_t* ciphertext);

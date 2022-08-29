@@ -343,7 +343,7 @@ void al_crypto_log_ciphertext(byte_t* ciphertext) {
     }
     chars3[32] = '\0';
 
-    ESP_LOGV(TAG,
+    ESP_LOGD(TAG,
              "ciphertext: %s %s ... %s",
              chars1,
              chars2,
