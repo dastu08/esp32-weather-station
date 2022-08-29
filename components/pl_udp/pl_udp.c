@@ -136,7 +136,10 @@ void pl_udp_handler(void *arg,
                 break;
         }
 
-        pl_udp_send("{\"type\":\"hello world\"}");
+        byte_t in[32] = "{\"type\":\"hello world\"}";
+        byte_t out[32+16];
+        al_crypto_encrypt(in, out);
+        pl_udp_send((char*)out);
 
         // start listening
         xTaskCreate(pl_udp_receive,
@@ -152,13 +155,14 @@ void pl_udp_send(const char *msg) {
     // TODO msg -> msg_crypt
     // char msg_crypt[273];
     // al_crypto_encrypt(msg, msg_crypt);
+    int msg_length = strlen(msg);
 
     // check if socket was created
     if (sock >= 0 && udp_ready == true) {
         // send message via socket
         int err = sendto(sock,
                          msg,
-                         strlen(msg),
+                         msg_length,
                          0,
                          (struct sockaddr *)&tx_addr,
                          tx_addr_len);
@@ -169,10 +173,11 @@ void pl_udp_send(const char *msg) {
                      err);
         } else {
             ESP_LOGD(TAG,
-                     "<< %s:%d %s",
+                     "<< %s:%d (%d bytes, %d words)",
                      inet_ntoa(tx_addr.sin_addr.s_addr),
                      ntohs(tx_addr.sin_port),
-                     msg);
+                     msg_length,
+                     msg_length / 16);
         }
     }
 }

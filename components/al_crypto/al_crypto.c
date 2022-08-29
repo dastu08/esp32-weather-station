@@ -244,9 +244,11 @@ void al_crypto_encrypt(byte_t* plaintext,
     // null terminate the string
     ciphertext[max_length + 16] = '\0';
 
+    int cipher_length = strlen((char*)ciphertext);
     ESP_LOGV(TAG,
-             "ciphertext length(utf-8): %d",
-             strlen((char*)ciphertext));
+             "ciphertext length: %d bytes, %d words",
+             cipher_length,
+             cipher_length / 16);
 
     al_crypto_log_ciphertext(ciphertext);
 }
