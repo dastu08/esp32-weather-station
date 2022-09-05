@@ -16,6 +16,7 @@ temperature and pressure sensor **BMP180**. It uses the ESP-IDF framework.
 
 ------------------------------
 ## Usage
+
 1. Connect the `BMP180` to the `ESP32-DevKitC`. The default pins for **I2C** 
     are `GPIO 19` for **SDA** and `GPIO 18` for **SCL**. This is set in 
     `main.c` by calling
@@ -39,8 +40,8 @@ temperature and pressure sensor **BMP180**. It uses the ESP-IDF framework.
     {"type":"get", "quantity":["temperature", "pressure"]}
     {"type":"set", "name":"heartbeat", "value":"on"}
     {"type":"set", "name":"heartbeat", "value":"off"}
-    {"type":"set", "name":"heartbeat_interval", "value": 30}}
-    {"type":"set", "name":"measurement_interval", "value": 5}}
+    {"type":"set", "name":"heartbeat_interval", "value": 30}
+    {"type":"set", "name":"measurement_interval", "value": 5}
     ```
 5. The return objects have the following syntax.   
     Response to a `get` request which has only a single element in the list 
@@ -83,6 +84,10 @@ temperature and pressure sensor **BMP180**. It uses the ESP-IDF framework.
         "time":"2021-10-18 14:42:53 CET"
     }
     ```
+6. The UDP traffic is encrypted `AES-256-CBC` mode. The 32 byte key is set 
+   with `menuconfig`. The buffer length `BUFFER_LENGTH` in `al_crypto`
+   determines the length of the outgoing message. The incoming messages
+   can be as large as the `BUFFER_LENGTH + 16` for they contain the initialization vector as the first 16 bytes.
 
 -------------------------
 
@@ -195,7 +200,7 @@ xtensa-esp32-elf-gdb -x gdbinit build/esp32-devkitc.elf
 
 #### Pin connection for debugging
 | ESP-PROG | DevKit C |
-|----------|----------|
+| -------- | -------- |
 | TDO      | G15      |
 | TDI      | G12      |
 | TCK      | G13      |
