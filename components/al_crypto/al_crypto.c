@@ -12,8 +12,17 @@
 
 static const char* TAG = "al_crypto";
 
+// number of the maximum possible plaintext characters
+#define BUFFER_LENGTH 256
+
 // key string from config
 char key_string[65] = CONFIG_AES_256_KEY;
+
+byte_t iv[16];
+byte_t buffer_in[BUFFER_LENGTH];
+byte_t buffer_out[BUFFER_LENGTH];
+byte_t buffer_plaintext[BUFFER_LENGTH + 1];
+byte_t buffer_ciphertext[BUFFER_LENGTH + 17];
 
 // aes context needed for init
 mbedtls_aes_context ctx;
@@ -184,26 +193,21 @@ void al_crypto_init() {
     ESP_LOGI(TAG, "init finished");
 }
 
-void al_crypto_encrypt(byte_t* plaintext,
-                       byte_t* ciphertext) {
-    const int max_length = 128;
-    byte_t iv[16];
-    byte_t buffer_in[max_length];
-    byte_t buffer_out[max_length];
-
+byte_t* al_crypto_encrypt(byte_t* plaintext) {
     // length of the plaintext in bytes
-    int length = strlen((char*)plaintext);
+    int len = strlen((char*)plaintext);
+    int cipher_len;
 
     ESP_LOGD(TAG,
              "encrypting text of length %d bytes",
-             length);
+             len);
 
     // check if the plaintext is too long
-    if (length >= max_length) {
+    if (len > BUFFER_LENGTH) {
         ESP_LOGW(TAG,
                  "Cannot encrypt a message of length %d bytes, max length is %d bytes. Aborting!",
-                 length,
-                 max_length);
+                 len,
+                 BUFFER_LENGTH);
         return;
     }
 
@@ -211,20 +215,19 @@ void al_crypto_encrypt(byte_t* plaintext,
 
     // copy IV into ciphertext
     for (int i = 0; i < 16; ++i) {
-        ciphertext[i] = iv[i];
+        buffer_ciphertext[i] = iv[i];
     }
     ESP_LOGV(TAG, "copied iv into ciphertext");
 
     // copy message into buffer
-    for (int i = 0; i < length; ++i) {
+    for (int i = 0; i < len; ++i) {
         buffer_in[i] = plaintext[i];
     }
     ESP_LOGV(TAG, "copied plaintext into buffer");
 
     message_padding(buffer_in,
-                    length,
-                    max_length);
-
+                    len,
+                    BUFFER_LENGTH);
     ESP_LOGV(TAG, "padding of buffer");
 
     ESP_LOGV(TAG, "buffer_in: %s", buffer_in);
@@ -232,47 +235,46 @@ void al_crypto_encrypt(byte_t* plaintext,
     // encrypt the message
     mbedtls_aes_crypt_cbc(&ctx,
                           ESP_AES_ENCRYPT,
-                          max_length,
+                          BUFFER_LENGTH,
                           iv,
                           buffer_in,
                           buffer_out);
     ESP_LOGV(TAG, "encrypted buffer");
 
     // copy encrypted buffer into ciphertext after IV
-    for (int i = 0; i < max_length; ++i) {
-        ciphertext[16 + i] = buffer_out[i];
+    for (int i = 0; i < BUFFER_LENGTH; ++i) {
+        buffer_ciphertext[16 + i] = buffer_out[i];
     }
     // null terminate the string
-    ciphertext[max_length + 16] = '\0';
+    buffer_ciphertext[BUFFER_LENGTH + 16] = '\0';
 
-    int cipher_length = strlen((char*)ciphertext);
+    cipher_len = strlen((char*)buffer_ciphertext);
     ESP_LOGV(TAG,
-             "ciphertext length: %d bytes, %d words",
-             cipher_length,
-             cipher_length / 16);
+             "ciphertext length: %d bytes, %.2f words",
+             cipher_len,
+             (double)cipher_len / 16.);
 
-    al_crypto_log_ciphertext(ciphertext);
+    al_crypto_log_ciphertext(buffer_ciphertext);
+
+    return buffer_ciphertext;
 }
 
-void al_crypto_decrypt(byte_t* ciphertext,
-                       byte_t* plaintext) {
-    const int max_length = 128;
-    byte_t iv[16];
-    byte_t buffer_in[max_length];
-    byte_t buffer_out[max_length];
-
+byte_t* al_crypto_decrypt(byte_t* ciphertext, int length) {
     // length of the ciphertext in bytes
-    int length = strlen((char*)ciphertext);
+    // int len = strlen((char*)ciphertext);
+    int plain_len;
+    int cipher_len;
 
     ESP_LOGD(TAG,
              "decrypting text of length %d bytes",
              length);
 
-    // check if the plaintext is too long
-    if (length >= max_length) {
+    // check if the ciphertext is too long
+    if (length > (BUFFER_LENGTH + 16)) {
         ESP_LOGW(TAG,
-                 "Cannot decrypt a message of length %d. Aborting!",
-                 length);
+                 "Cannot decrypt a message of length %d, max length %d bytes. Aborting!",
+                 length,
+                 BUFFER_LENGTH);
         return;
     }
 
@@ -286,30 +288,38 @@ void al_crypto_decrypt(byte_t* ciphertext,
     for (int i = 16; i < length; ++i) {
         buffer_in[i - 16] = ciphertext[i];
     }
+    // int cipher_len = strlen((char*)buffer_in);
+    cipher_len = length - 16;
     ESP_LOGV(TAG,
-             "copied ciphertext into buffer %d bytes",
-             strlen((char*)buffer_in));
+             "copied ciphertext into buffer %d bytes, %.2f words",
+             cipher_len,
+             (double)cipher_len / 16.);
 
     // decrypt the message
     mbedtls_aes_crypt_cbc(&ctx,
                           ESP_AES_DECRYPT,
-                          max_length,
+                          cipher_len,
                           iv,
                           buffer_in,
                           buffer_out);
     ESP_LOGV(TAG, "decrypted buffer");
 
-    // copy the buffer into plaintext
-    for (int i = 0; i < max_length; i++) {
-        plaintext[i] = buffer_out[i];
+    // copy the buffer into plaintext only up to cipher_len
+    for (int i = 0; i < cipher_len; i++) {
+        buffer_plaintext[i] = buffer_out[i];
     }
     // null terminate the string
-    plaintext[max_length] = '\0';
+    buffer_plaintext[cipher_len] = '\0';
 
+    plain_len = strlen((char*)buffer_plaintext);
     ESP_LOGV(TAG,
-             "plaintext length: %d bytes",
-             strlen((char*)plaintext));
+             "plaintext length: %d bytes, %.2f words",
+             plain_len,
+             (double)plain_len / 16.);
+
+    return buffer_plaintext;
 }
+
 
 void al_crypto_log_ciphertext(byte_t* ciphertext) {
     byte_t byte;

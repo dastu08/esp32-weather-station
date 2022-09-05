@@ -32,11 +32,10 @@ struct sockaddr_in tx_addr;
 socklen_t rx_addr_len;
 socklen_t tx_addr_len;
 
-// String buffer for incoming messages (127 characters).
-char rx_buffer[128];
-// String buffer for composing sending messages (127
-// characters).
-char tx_buffer[128];
+static const int BUFFER_LEN = 257;
+// String buffer for incoming messages (256 characters).
+char rx_buffer[257];
+
 // Buffer for ip address.
 char ip_addr[128];
 
@@ -153,27 +152,28 @@ void pl_udp_handler(void *arg,
 }
 
 void pl_udp_send(const char *msg) {
-    const int ciphertext_length = 128 + 16;
-    byte_t ciphertext[ciphertext_length];
-    int msg_length = strlen(msg);
+    byte_t *ciphertext;
+    int msg_len = strlen(msg);
+    int cipher_len;
 
-    if ((msg_length + 16) > ciphertext_length) {
+    if (msg_len > BUFFER_LEN) {
         ESP_LOGW(TAG,
                  "cannot send a message of length %d bytes, maximum is %d bytes. Aborting sending!",
-                 msg_length,
-                 ciphertext_length - 16);
+                 msg_len,
+                 BUFFER_LEN);
         return;
     } else {
         ESP_LOGV(TAG, "plain message: %s", msg);
     }
-    al_crypto_encrypt((byte_t *)msg, ciphertext);
+    ciphertext = al_crypto_encrypt((byte_t *)msg);
+    cipher_len = BUFFER_LEN + 15;
 
     // check if socket was created
     if (sock >= 0 && udp_ready == true) {
         // send message via socket
         int err = sendto(sock,
                          ciphertext,
-                         ciphertext_length,
+                         cipher_len,
                          0,
                          (struct sockaddr *)&tx_addr,
                          tx_addr_len);
@@ -184,29 +184,31 @@ void pl_udp_send(const char *msg) {
                      err);
         } else {
             ESP_LOGD(TAG,
-                     "<< %s:%d (%d bytes, %d words)",
+                     "<< %s:%d (%d bytes, %.2f words)",
                      inet_ntoa(tx_addr.sin_addr.s_addr),
                      ntohs(tx_addr.sin_port),
-                     ciphertext_length,
-                     ciphertext_length / 16);
+                     cipher_len,
+                     (double)cipher_len / 16.);
         }
     }
 }
 
 void pl_udp_receive() {
-    byte_t plaintext[128];
+    byte_t *plaintext;
+    int len;
+
     // listening loop to start this function as a task
     while (1) {
         // check if socket was created
         if (sock >= 0 && udp_ready == true) {
             // receive message from bound socket and save in
             // rx_buffer
-            int len = recvfrom(sock,
-                               rx_buffer,
-                               sizeof(rx_buffer) - 1,
-                               0,
-                               (struct sockaddr *)&rx_addr,
-                               &rx_addr_len);
+            len = recvfrom(sock,
+                           rx_buffer,
+                           sizeof(rx_buffer) - 1,
+                           0,
+                           (struct sockaddr *)&rx_addr,
+                           &rx_addr_len);
 
             if (len < 0) {
                 ESP_LOGW(TAG,
@@ -223,19 +225,19 @@ void pl_udp_receive() {
 
                 // print message
                 ESP_LOGV(TAG,
-                         ">> %s:%d (%d bytes, %d words)",
+                         ">> %s:%d (%d bytes, %.2f words)",
                          ip_addr,
                          ntohs(rx_addr.sin_port),
                          len,
-                         len / 16);
+                         (double)len / 16.);
 
-                // TODO decrypt
-                al_crypto_decrypt((byte_t *)rx_buffer, plaintext);
+                plaintext = al_crypto_decrypt((byte_t *)rx_buffer, len);
+                ESP_LOGV(TAG, "message: '%s'", plaintext);
 
                 esp_event_post(UDP_EVENT,
                                UDP_EVENT_RECEIVED,
                                plaintext,
-                               sizeof(plaintext),
+                               sizeof(plaintext) * strlen((char *)plaintext),
                                portMAX_DELAY);
             }
         }

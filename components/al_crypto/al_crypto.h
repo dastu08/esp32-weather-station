@@ -27,7 +27,7 @@ void al_crypto_init();
 **Requirements**
     Component al_cypto must be initialized with
     `al_crypto_init()`. The allocated length of the
-    ciphertext must be strlen(plaintext) + 16.
+    ciphertext must be strlen(plaintext) + 17.
 
 **Description**
     Generate and IV. Encrypt the plaintext in AES-CBC mode
@@ -35,29 +35,27 @@ void al_crypto_init();
     was set during initialization. Prepend the IV to the
     ciphertext.
 */
-void al_crypto_encrypt(byte_t* plaintext,
-                       byte_t* ciphertext);
+byte_t* al_crypto_encrypt(byte_t* plaintext);
 
 /** Decrypt the cipher text with AES-CBC mode
 
 **Parameters**
     - *ciphertext : byte array of the cipher text
-    - *plaintext : byte array for the plain text 
+    - *plaintext : byte array for the plain text
 
 **Requirements**
     Component al_cypto must be initialized with
     `al_crypto_init()`. The IV must be 16 bytes long and
-    the first block of the cipher text. Plaintext and 
-    ciphertext must have the same length and this must be 
+    the first block of the cipher text. Plaintext and
+    ciphertext must have the same length and this must be
     a multiple of 16 bytes.
 
 **Description**
-    Copy the IV from the ciphertext. Decrypt the ciphertext 
-    in AES-CBC mode with the specified initialization vector 
+    Copy the IV from the ciphertext. Decrypt the ciphertext
+    in AES-CBC mode with the specified initialization vector
     (IV). The key was set during initialization.
 */
-void al_crypto_decrypt(byte_t* ciphertext,
-                       byte_t* plaintext);
+byte_t* al_crypto_decrypt(byte_t* ciphertext, int length);
 
 /** Log the ciphertext
 
