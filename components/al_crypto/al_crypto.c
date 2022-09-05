@@ -201,8 +201,9 @@ void al_crypto_encrypt(byte_t* plaintext,
     // check if the plaintext is too long
     if (length >= max_length) {
         ESP_LOGW(TAG,
-                 "Cannot send a message of length %d. Aborting!",
-                 length);
+                 "Cannot encrypt a message of length %d bytes, max length is %d bytes. Aborting!",
+                 length,
+                 max_length);
         return;
     }
 
@@ -306,7 +307,7 @@ void al_crypto_decrypt(byte_t* ciphertext,
     plaintext[max_length] = '\0';
 
     ESP_LOGV(TAG,
-             "plaintext length(utf-8): %d",
+             "plaintext length: %d bytes",
              strlen((char*)plaintext));
 }
 
