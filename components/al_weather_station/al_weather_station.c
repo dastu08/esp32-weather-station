@@ -6,7 +6,7 @@
 #include <string.h>
 
 #include "../al_bmp180/al_bmp180.h"
-#include "../al_crypto/al_crypto.h"
+// #include "../al_crypto/al_crypto.h"
 #include "../general/general.h"
 #include "../heartbeat/heartbeat.h"
 #include "../pl_udp/pl_udp.h"
