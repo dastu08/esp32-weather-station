@@ -255,7 +255,7 @@ void al_crypto_encrypt(byte_t* plaintext,
 
 void al_crypto_decrypt(byte_t* ciphertext,
                        byte_t* plaintext) {
-    const int max_length = 64;
+    const int max_length = 128;
     byte_t iv[16];
     byte_t buffer_in[max_length];
     byte_t buffer_out[max_length];
@@ -285,7 +285,9 @@ void al_crypto_decrypt(byte_t* ciphertext,
     for (int i = 16; i < length; ++i) {
         buffer_in[i - 16] = ciphertext[i];
     }
-    ESP_LOGV(TAG, "copied ciphertext into buffer");
+    ESP_LOGV(TAG,
+             "copied ciphertext into buffer %d bytes",
+             strlen((char*)buffer_in));
 
     // decrypt the message
     mbedtls_aes_crypt_cbc(&ctx,

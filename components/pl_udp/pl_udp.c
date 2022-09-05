@@ -165,7 +165,7 @@ void pl_udp_send(const char *msg) {
     } else {
         ESP_LOGV(TAG, "plain message: %s", msg);
     }
-    al_crypto_encrypt((byte_t*)msg, ciphertext);
+    al_crypto_encrypt((byte_t *)msg, ciphertext);
 
     // check if socket was created
     if (sock >= 0 && udp_ready == true) {
@@ -193,6 +193,7 @@ void pl_udp_send(const char *msg) {
 }
 
 void pl_udp_receive() {
+    byte_t plaintext[128];
     // listening loop to start this function as a task
     while (1) {
         // check if socket was created
@@ -221,15 +222,19 @@ void pl_udp_receive() {
 
                 // print message
                 ESP_LOGV(TAG,
-                         ">> %s:%d %s",
+                         ">> %s:%d (%d bytes, %d words)",
                          ip_addr,
                          ntohs(rx_addr.sin_port),
-                         rx_buffer);
+                         len,
+                         len / 16);
+
+                // TODO decrypt
+                al_crypto_decrypt((byte_t *)rx_buffer, plaintext);
 
                 esp_event_post(UDP_EVENT,
                                UDP_EVENT_RECEIVED,
-                               rx_buffer,
-                               sizeof(rx_buffer),
+                               plaintext,
+                               sizeof(plaintext),
                                portMAX_DELAY);
             }
         }
