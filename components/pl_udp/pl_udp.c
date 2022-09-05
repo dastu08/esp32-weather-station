@@ -154,6 +154,7 @@ void pl_udp_send(const char *msg) {
     int msg_len = strlen(msg);
     int cipher_len;
 
+    // check if the message can be encrypted
     if (msg_len >= BUFFER_LENGTH) {
         ESP_LOGW(TAG,
                  "cannot send a message of length %d bytes, maximum is %d bytes. Aborting sending!",
@@ -163,6 +164,7 @@ void pl_udp_send(const char *msg) {
     } else {
         ESP_LOGV(TAG, "plain message: %s", msg);
     }
+    // encrypt and reuse the length of the ciphertext
     ciphertext = al_crypto_encrypt((byte_t *)msg);
     cipher_len = BUFFER_LENGTH + 15;
 
