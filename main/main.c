@@ -138,12 +138,6 @@ void app_main() {
     esp_log_level_set("al_crypto", ESP_LOG_INFO);
     al_crypto_init();
 
-    // byte_t in[32] = "hello world and here it goes";
-    // byte_t out[32+16];
-    // al_crypto_encrypt(in, out);
-
-    // al_crypto_decrypt(out, 32, iv, out2);
-
 #endif  // ENABLE_CRYPTO
 
     while (1) {
