@@ -35,7 +35,7 @@ esp_timer_handle_t measurement_timer;
 /** Convert a string to a quanity_type number.
 
 ** Parameters**
-    - string: 
+    - string:
         char pointer that points to the string to be
         converted
 
@@ -45,7 +45,7 @@ esp_timer_handle_t measurement_timer;
     value if no string is matched is `INVALID_QUANTITY`.
 
 **Description**
-    Use `strcmp` to check the input string against known 
+    Use `strcmp` to check the input string against known
     types.
 */
 uint8_t string2quanity_type(char *string) {
@@ -63,7 +63,7 @@ uint8_t string2quanity_type(char *string) {
 /** Convert a string to a name_type number.
 
 ** Parameters**
-    - string: 
+    - string:
         char pointer that points to the string to be
         converted
 
@@ -73,7 +73,7 @@ uint8_t string2quanity_type(char *string) {
     value if no string is matched is `INVALID_NAME`.
 
 **Description**
-    Use `strcmp` to check the input string against known 
+    Use `strcmp` to check the input string against known
     types.
 */
 uint8_t string2name_type(char *string) {
@@ -94,13 +94,13 @@ uint8_t string2name_type(char *string) {
 
 **Parameters**
     - quantity_string:
-        char pointer to the string that can be converted to 
+        char pointer to the string that can be converted to
         a quantity type by `string2quantity_type`
-    
+
 **Description**
     Start issuing the measurment on the BMP180. This include
     the temperature and the pressure. Get the system time
-    and send the result of the measurement together with the 
+    and send the result of the measurement together with the
     time stamp via UDP. If the input string does not match
     send an error.
 */
@@ -142,7 +142,7 @@ void make_measurement(char *quantity_string) {
 
 **Parameters**
     - name_string:
-        string that contains the name of the variable to be 
+        string that contains the name of the variable to be
         set. This must be convertable by `string2name_type`
     - value_string:
         string containing the value for the set variable
@@ -171,7 +171,7 @@ void set_variable_string(char *name_string,
 
 **Parameters**
     - name_string:
-        string that contains the name of the variable to be 
+        string that contains the name of the variable to be
         set. This must be convertable by `string2name_type`
     - value_int:
         integer containing the value for the set variable
@@ -207,7 +207,7 @@ void set_variable_int(char *name_string,
 /** Function gets called when the timer runs out.
 
 **Description**
-    Perform the measurments of temperature and pressure. 
+    Perform the measurments of temperature and pressure.
     Save the system time of the measurment time point. Send
     the results together with the time tag via UDP.
 */
@@ -264,12 +264,13 @@ void al_weather_station_handler(void *arg, esp_event_base_t base, int32_t id,
     cJSON *data_type = NULL;
 
     // parse received data as json and evaluate the request
-    data_json = cJSON_Parse(data);
+    data_json = cJSON_Parse((char *)data);
     if (data_json != NULL) {
         // extract type to later distignuish get/set
         data_type = cJSON_GetObjectItemCaseSensitive(data_json, "type");
     } else {
         ESP_LOGW(TAG, "Couldn't parse JSON");
+        ESP_LOGV(TAG, "json string: '%s'", (char *)data);
     }
 
     // handle get/set request
