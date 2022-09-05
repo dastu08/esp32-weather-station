@@ -17,6 +17,9 @@
 #include "lwip/inet.h"
 #include "lwip/sockets.h"
 
+// length of the receiving buffer in bytes
+#define BUFFER_LENGTH 257
+
 ESP_EVENT_DEFINE_BASE(UDP_EVENT);
 
 // Socket file descriptor which will be the output of
@@ -32,15 +35,14 @@ struct sockaddr_in tx_addr;
 socklen_t rx_addr_len;
 socklen_t tx_addr_len;
 
-static const int BUFFER_LEN = 257;
 // String buffer for incoming messages (256 characters).
-char rx_buffer[257];
+char rx_buffer[BUFFER_LENGTH];
 
 // Buffer for ip address.
 char ip_addr[128];
 
 // Tag for logging from this component.
-const char *TAG = "pl_udp";
+static const char *TAG = "pl_udp";
 
 // Flag checked by send and receive to see if udp is ready
 // to use.
@@ -135,10 +137,6 @@ void pl_udp_handler(void *arg,
                 break;
         }
 
-        // byte_t in[32] = "{\"type\":\"hello world\"}";
-        // byte_t out[32 + 16];
-        // al_crypto_encrypt(in, out);
-        // pl_udp_send((char *)out);
         pl_udp_send("{\"type\":\"hello world\"}");
 
         // start listening
@@ -156,17 +154,17 @@ void pl_udp_send(const char *msg) {
     int msg_len = strlen(msg);
     int cipher_len;
 
-    if (msg_len > BUFFER_LEN) {
+    if (msg_len >= BUFFER_LENGTH) {
         ESP_LOGW(TAG,
                  "cannot send a message of length %d bytes, maximum is %d bytes. Aborting sending!",
                  msg_len,
-                 BUFFER_LEN);
+                 BUFFER_LENGTH - 1);
         return;
     } else {
         ESP_LOGV(TAG, "plain message: %s", msg);
     }
     ciphertext = al_crypto_encrypt((byte_t *)msg);
-    cipher_len = BUFFER_LEN + 15;
+    cipher_len = BUFFER_LENGTH + 15;
 
     // check if socket was created
     if (sock >= 0 && udp_ready == true) {
