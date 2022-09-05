@@ -50,31 +50,35 @@ void pl_udp_handler(void* arg,
                     int32_t id,
                     void* data);
 
-/** Send data via UDP.
+/** Send data via UDP encrypted.
 
 **Parameters**
     - *msg : Message to send.
 
 **Requirements**
     UDP must be init and flag `udp_ready` has to be true.
+    Encryption must be initialized. The length of `msg` has
+    to be less than the buffer length.
 
 **Description**
-    Send UDP message via socket and `sendto()` to ip address
-    set in `pl_udp_init()`.
+    Encrypt the message. Send UDP message via socket and 
+    `sendto()` to ip address set in `pl_udp_init()`.
 */
 void pl_udp_send(const char* msg);
 
-/** Receive data via UDP and print to log.
+/** Receive encrypted data via UDP and print to log.
 
 **Requirements**
-    UDP must be init and flag `udp_read` true.
+    UDP must be init and flag `udp_read` true. The length
+    of the incoming UDP message must be a multiple of 16.
+    Maximum length is given by the buffer length.
 
 **Description**
+    Run loop for ever in a task.
     Receive bytes via socket and `recfrom()` from ip address
-    set in `pl_udp_init()`. Log message to esp log output as
-    VERBOSE. Post a new udp event with id
-    UDP_EVENT_RECEIVED with the message as the data.
-    Recreates a new receiving task and deletes the old one.
+    set in `pl_udp_init()`. Decrypt the message. Log message 
+    to esp log output as VERBOSE. Post a new udp event with 
+    id UDP_EVENT_RECEIVED with the message as the data.
 */
 void pl_udp_receive();
 

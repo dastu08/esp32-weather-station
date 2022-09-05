@@ -4,6 +4,7 @@
 // components
 #include "./pl_udp.h"
 
+#include "../al_crypto/al_crypto.h"
 #include "../general/general.h"
 
 // esp-idf
@@ -15,6 +16,9 @@
 #include "lwip/err.h"
 #include "lwip/inet.h"
 #include "lwip/sockets.h"
+
+// length of the receiving buffer in bytes
+#define BUFFER_LENGTH 257
 
 ESP_EVENT_DEFINE_BASE(UDP_EVENT);
 
@@ -31,16 +35,14 @@ struct sockaddr_in tx_addr;
 socklen_t rx_addr_len;
 socklen_t tx_addr_len;
 
-// String buffer for incoming messages (127 characters).
-char rx_buffer[128];
-// String buffer for composing sending messages (127
-// characters).
-char tx_buffer[128];
+// String buffer for incoming messages (256 characters).
+char rx_buffer[BUFFER_LENGTH];
+
 // Buffer for ip address.
 char ip_addr[128];
 
 // Tag for logging from this component.
-const char *TAG = "pl_udp";
+static const char *TAG = "pl_udp";
 
 // Flag checked by send and receive to see if udp is ready
 // to use.
@@ -88,51 +90,51 @@ void pl_udp_handler(void *arg,
 
     if (base == IP_EVENT) {
         switch (id) {
-        case IP_EVENT_STA_GOT_IP:
+            case IP_EVENT_STA_GOT_IP:
 
-            // create IPv4 socket and get file
-            // descriptor
-            // domain: AF_INET : IPv4
-            // type: SOCK_DGRAM : datagram sockets
-            // protocol : IPPROTO_UDP
-            sock = socket(AF_INET,
-                          SOCK_DGRAM,
-                          IPPROTO_UDP);
+                // create IPv4 socket and get file
+                // descriptor
+                // domain: AF_INET : IPv4
+                // type: SOCK_DGRAM : datagram sockets
+                // protocol : IPPROTO_UDP
+                sock = socket(AF_INET,
+                              SOCK_DGRAM,
+                              IPPROTO_UDP);
 
-            if (sock < 0) {
-                ESP_LOGW(TAG,
-                         "udp socket does not exist");
-            } else {
-                ESP_LOGV(TAG, "created udp socket");
-
-                // bind socket to receiving port
-                err = bind(sock,
-                           (struct sockaddr *)&rx_addr,
-                           rx_addr_len);
-
-                if (err < 0) {
-                    ESP_LOGE(TAG,
-                             "unable to bind socket to port %d",
-                             ntohs(rx_addr.sin_port));
+                if (sock < 0) {
+                    ESP_LOGW(TAG,
+                             "udp socket does not exist");
                 } else {
-                    ESP_LOGD(TAG,
-                             "bound socket to port %d",
-                             ntohs(rx_addr.sin_port));
+                    ESP_LOGV(TAG, "created udp socket");
 
-                    udp_ready = true;
+                    // bind socket to receiving port
+                    err = bind(sock,
+                               (struct sockaddr *)&rx_addr,
+                               rx_addr_len);
 
-                    // get time syncronization
-                    sntp_setoperatingmode(SNTP_OPMODE_POLL);
-                    sntp_setservername(0, "pool.ntp.org");
-                    sntp_init();
-                    ESP_LOGV(TAG, "starting sntp_init");
+                    if (err < 0) {
+                        ESP_LOGE(TAG,
+                                 "unable to bind socket to port %d",
+                                 ntohs(rx_addr.sin_port));
+                    } else {
+                        ESP_LOGD(TAG,
+                                 "bound socket to port %d",
+                                 ntohs(rx_addr.sin_port));
+
+                        udp_ready = true;
+
+                        // get time syncronization
+                        sntp_setoperatingmode(SNTP_OPMODE_POLL);
+                        sntp_setservername(0, "pool.ntp.org");
+                        sntp_init();
+                        ESP_LOGV(TAG, "starting sntp_init");
+                    }
                 }
-            }
-            break;
+                break;
 
-        default:
-            // nothing
-            break;
+            default:
+                // nothing
+                break;
         }
 
         pl_udp_send("{\"type\":\"hello world\"}");
@@ -148,12 +150,30 @@ void pl_udp_handler(void *arg,
 }
 
 void pl_udp_send(const char *msg) {
+    byte_t *ciphertext;
+    int msg_len = strlen(msg);
+    int cipher_len;
+
+    // check if the message can be encrypted
+    if (msg_len >= BUFFER_LENGTH) {
+        ESP_LOGW(TAG,
+                 "cannot send a message of length %d bytes, maximum is %d bytes. Aborting sending!",
+                 msg_len,
+                 BUFFER_LENGTH - 1);
+        return;
+    } else {
+        ESP_LOGV(TAG, "plain message: %s", msg);
+    }
+    // encrypt and reuse the length of the ciphertext
+    ciphertext = al_crypto_encrypt((byte_t *)msg);
+    cipher_len = BUFFER_LENGTH + 15;
+
     // check if socket was created
     if (sock >= 0 && udp_ready == true) {
         // send message via socket
         int err = sendto(sock,
-                         msg,
-                         strlen(msg),
+                         ciphertext,
+                         cipher_len,
                          0,
                          (struct sockaddr *)&tx_addr,
                          tx_addr_len);
@@ -163,28 +183,32 @@ void pl_udp_send(const char *msg) {
                      "unable to send message error %d",
                      err);
         } else {
-            ESP_LOGV(TAG,
-                     "<< %s:%d %s",
+            ESP_LOGD(TAG,
+                     "<< %s:%d (%d bytes, %.2f words)",
                      inet_ntoa(tx_addr.sin_addr.s_addr),
                      ntohs(tx_addr.sin_port),
-                     msg);
+                     cipher_len,
+                     (double)cipher_len / 16.);
         }
     }
 }
 
 void pl_udp_receive() {
+    byte_t *plaintext;
+    int len;
+
     // listening loop to start this function as a task
     while (1) {
         // check if socket was created
         if (sock >= 0 && udp_ready == true) {
             // receive message from bound socket and save in
             // rx_buffer
-            int len = recvfrom(sock,
-                               rx_buffer,
-                               sizeof(rx_buffer) - 1,
-                               0,
-                               (struct sockaddr *)&rx_addr,
-                               &rx_addr_len);
+            len = recvfrom(sock,
+                           rx_buffer,
+                           sizeof(rx_buffer) - 1,
+                           0,
+                           (struct sockaddr *)&rx_addr,
+                           &rx_addr_len);
 
             if (len < 0) {
                 ESP_LOGW(TAG,
@@ -201,15 +225,19 @@ void pl_udp_receive() {
 
                 // print message
                 ESP_LOGV(TAG,
-                         ">> %s:%d %s",
+                         ">> %s:%d (%d bytes, %.2f words)",
                          ip_addr,
                          ntohs(rx_addr.sin_port),
-                         rx_buffer);
+                         len,
+                         (double)len / 16.);
+
+                plaintext = al_crypto_decrypt((byte_t *)rx_buffer, len);
+                ESP_LOGV(TAG, "message: '%s'", plaintext);
 
                 esp_event_post(UDP_EVENT,
                                UDP_EVENT_RECEIVED,
-                               rx_buffer,
-                               sizeof(rx_buffer),
+                               plaintext,
+                               sizeof(plaintext) * strlen((char *)plaintext),
                                portMAX_DELAY);
             }
         }

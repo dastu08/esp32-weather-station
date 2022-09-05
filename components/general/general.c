@@ -34,14 +34,25 @@ void get_time(char *buf) {
     setenv("TZ", "CET-1", 1);
     tzset();
     // get time in time zone format
-    localtime_r(&epoch, &date);
+    // localtime_r(&epoch, &date);
+    // get time in UTC
+    gmtime_r(&epoch, &date);
     // convert time to string
     sprintf(buf,
-            "%04d-%02d-%02d %02d:%02d:%02d CET",
+            "%04d-%02d-%02dT%02d:%02d:%02dZ",
             date.tm_year + 1900,
             date.tm_mon + 1,
             date.tm_mday,
             date.tm_hour,
             date.tm_min,
             date.tm_sec);
+}
+
+long get_seed() {
+   time_t epoch; 
+   // get current time
+    time(&epoch);
+    // convert to long as seed
+    return (long)epoch;
+    
 }
