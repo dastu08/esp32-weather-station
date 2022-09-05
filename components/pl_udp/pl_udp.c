@@ -154,13 +154,14 @@ void pl_udp_handler(void *arg,
 
 void pl_udp_send(const char *msg) {
     const int ciphertext_length = 128 + 16;
-    int msg_length = strlen(msg);
     byte_t ciphertext[ciphertext_length];
+    int msg_length = strlen(msg);
 
-    if (msg_length > (ciphertext_length - 16)) {
+    if ((msg_length + 16) > ciphertext_length) {
         ESP_LOGW(TAG,
-                 "cannot send a message of length %d bytes, maximum is 64 bytes. Aborting sending!",
-                 msg_length);
+                 "cannot send a message of length %d bytes, maximum is %d bytes. Aborting sending!",
+                 msg_length,
+                 ciphertext_length - 16);
         return;
     } else {
         ESP_LOGV(TAG, "plain message: %s", msg);
