@@ -261,7 +261,7 @@ void al_crypto_decrypt(byte_t* ciphertext,
     byte_t buffer_out[max_length];
 
     // length of the ciphertext in bytes
-    int length = strlen((char*)plaintext);
+    int length = strlen((char*)ciphertext);
 
     ESP_LOGD(TAG,
              "decrypting text of length %d bytes",
