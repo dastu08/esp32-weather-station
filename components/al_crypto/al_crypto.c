@@ -260,8 +260,6 @@ byte_t* al_crypto_encrypt(byte_t* plaintext) {
 }
 
 byte_t* al_crypto_decrypt(byte_t* ciphertext, int length) {
-    // length of the ciphertext in bytes
-    // int len = strlen((char*)ciphertext);
     int plain_len;
     int cipher_len;
 
@@ -288,7 +286,6 @@ byte_t* al_crypto_decrypt(byte_t* ciphertext, int length) {
     for (int i = 16; i < length; ++i) {
         buffer_in[i - 16] = ciphertext[i];
     }
-    // int cipher_len = strlen((char*)buffer_in);
     cipher_len = length - 16;
     ESP_LOGV(TAG,
              "copied ciphertext into buffer %d bytes, %.2f words",
@@ -319,7 +316,6 @@ byte_t* al_crypto_decrypt(byte_t* ciphertext, int length) {
 
     return buffer_plaintext;
 }
-
 
 void al_crypto_log_ciphertext(byte_t* ciphertext) {
     byte_t byte;
