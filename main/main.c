@@ -71,7 +71,7 @@ void app_main() {
     // show less infos from the internal wifi component
     esp_log_level_set("wifi", ESP_LOG_WARN);
     esp_log_level_set("dl_wifi", ESP_LOG_INFO);
-    esp_log_level_set("pl_udp", ESP_LOG_VERBOSE);
+    esp_log_level_set("pl_udp", ESP_LOG_INFO);
 
     // register the event handlers for any wifi or ip events
     // to the default event loop. need `esp_event.h` to
@@ -135,7 +135,7 @@ void app_main() {
 #endif  // ENABLE_WEATHER_STATION
 
 #ifdef ENABLE_CRYPTO
-    esp_log_level_set("al_crypto", ESP_LOG_DEBUG);
+    esp_log_level_set("al_crypto", ESP_LOG_INFO);
     al_crypto_init();
 
     // byte_t in[32] = "hello world and here it goes";
