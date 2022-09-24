@@ -31,6 +31,8 @@
 
 // period of the weather station measurements in seconds
 #define MEASUREMENT_RATE 600
+// period of the heartbeat timer in seconds
+#define HEARTBEAT_RATE 300
 // port for the udp communication
 #define UDP_PORT 50000
 
@@ -50,7 +52,7 @@ void app_main() {
     // log on app start as warning to make it visible
     ESP_LOGW(TAG, "Hello world!");
 
-    esp_log_level_set("user", ESP_LOG_VERBOSE);
+    esp_log_level_set("user", ESP_LOG_INFO);
 
     // create an event loop
     log_status(TAG,
@@ -117,7 +119,7 @@ void app_main() {
 #endif  // ENABLE_HEARTBEAT
 
 #ifdef ENABLE_WEATHER_STATION
-    esp_log_level_set("weather_station", ESP_LOG_DEBUG);
+    esp_log_level_set("weather_station", ESP_LOG_INFO);
 
     // register the handler that handles incoming UDP
     // messages and thus initiates measurements
