@@ -27,9 +27,12 @@ temperature and pressure sensor **BMP180**. It uses the ESP-IDF framework.
     [Project Configuration](#project-configuration) for the steps to enter 
     the _ssid_ and the _password_.
 3. Communicate with the ESP32 via **UDP**. Both sending and receiving are 
-    done over the same port. The port is set in `main.c`. 
+    done over the same port. The port and the timer periods for heartbeat 
+    and measurements are set in `main.c`. 
     ```c
     #define UDP_PORT 50000
+    #define MEASUREMENT_RATE 600
+    #define HEARTBEAT_RATE 300
     ```
 4. The **UDP** communication consists of **JSON** objects that are send as 
     strings. The following listing shows all the current options. 
@@ -57,7 +60,7 @@ temperature and pressure sensor **BMP180**. It uses the ESP-IDF framework.
         }]
     }
     ```
-    Respone from a periodic `measurement` which holds a list of measured 
+    Response from a periodic `measurement` which holds a list of measured 
     quantities in `quantity`.
     ```json
     {
@@ -99,7 +102,7 @@ found on GitHub and has an extensive documentation.
 
 This project uses **version 4.2** of the ESP-IDF.
 ```bash
-git clone --recurisve --branch v4.2 https://github.com/espressif/esp-idf.git
+git clone --recursive --branch v4.2 https://github.com/espressif/esp-idf.git
 ```
 
 ### Toolchain Troubleshooting (Ubuntu)
@@ -153,7 +156,7 @@ Further documentation for `monitor`.
 
 ### WiFi
 The WiFi bundle uses the **LwIP stack** with `esp_netif` and **BSD Sockets** 
-for UDP/TCP communication. Time syncronization is done via `sntp`.  
+for UDP/TCP communication. Time synchronization is done via `sntp`.  
 
 => https://docs.espressif.com/projects/esp-idf/en/v4.2/esp32/api-guides/wifi.html  
 => https://docs.espressif.com/projects/esp-idf/en/v4.2/esp32/api-reference/network/esp_netif.html  
