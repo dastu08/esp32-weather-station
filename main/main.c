@@ -30,9 +30,9 @@
 #define ENABLE_CRYPTO
 
 // period of the weather station measurements in seconds
-#define MEASUREMENT_RATE 600
+#define MEASUREMENT_RATE 3600
 // period of the heartbeat timer in seconds
-#define HEARTBEAT_RATE 300
+#define HEARTBEAT_RATE 1800
 // port for the udp communication
 #define UDP_PORT 50000
 
