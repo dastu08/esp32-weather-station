@@ -190,6 +190,7 @@ void set_variable_int(char *name_string,
             heartbeat_stop();
             heartbeat_set_period(value_int);
             heartbeat_start();
+            ESP_LOGI(TAG, "Updated heartbeat period to %llu seconds.", value_int);
             break;
 
         case MEASUREMENT_INTERVAL:
@@ -197,6 +198,7 @@ void set_variable_int(char *name_string,
             // period
             al_weather_station_stop();
             al_weather_station_start(value_int);
+            ESP_LOGI(TAG, "Updated measurement period to %llu seconds.", value_int);
             break;
 
         default:
