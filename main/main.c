@@ -30,9 +30,9 @@
 #define ENABLE_CRYPTO
 
 // period of the weather station measurements in seconds
-#define MEASUREMENT_RATE 3600
+#define MEASUREMENT_RATE 3*3600
 // period of the heartbeat timer in seconds
-#define HEARTBEAT_RATE 1800
+#define HEARTBEAT_RATE 3600
 // port for the udp communication
 #define UDP_PORT 50000
 
@@ -113,7 +113,7 @@ void app_main() {
                "register heartbeat event HEARTBEAT_EVENT_SEND_handler");
 
     // init and start the heartbeat timer
-    heartbeat_set_period(300);
+    heartbeat_set_period(HEARTBEAT_RATE);
     heartbeat_init();
     heartbeat_start();
 #endif  // ENABLE_HEARTBEAT
